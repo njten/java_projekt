@@ -1,4 +1,4 @@
-# Geometry Dash (Java)
+# Geometry Dash (Java projekt)
 
 Jednoduchá 2D hra inspirovaná **Geometry Dash**, naprogramovaná v Javě.  
 Hráč ovládá čtverec, který automaticky běží vpřed a musí přeskočit překážky.  
