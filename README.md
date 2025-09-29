@@ -8,7 +8,7 @@ Pokud do překážky narazí → hra končí.
 
 ## 🎮 Funkce
 - Automatický pohyb hráče vpřed
-- Skok na mezerník nebo myš
+- Skok na mezerník
 - Generované překážky (bloky, hroty)
 - Detekce kolizí
 - Počítání skóre (ujetá vzdálenost)
