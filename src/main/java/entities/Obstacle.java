@@ -1,21 +1,15 @@
 package entities;
 
+import core.GameObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Obstacle {
-    private int x, y;
-    private int width, height;
-
+public class Obstacle extends GameObject {
     public Obstacle(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        super(x, y, width, height);
     }
 
-    // obstacle zůstávají na místě, není potřeba update
-
+    @Override
     public void render(GraphicsContext gc) {
         gc.setFill(Color.DARKORANGE);
         double[] xPoints = {x, x + width / 2.0, x + width};
@@ -25,11 +19,6 @@ public class Obstacle {
         gc.setStroke(Color.BLACK);
         gc.strokePolygon(xPoints, yPoints, 3);
     }
-
-    public int getLeft()   { return x; }
-    public int getRight()  { return x + width; }
-    public int getTop()    { return y; }
-    public int getBottom() { return y + height; }
 
     public boolean intersects(Player p) {
         return !(getRight() < p.getLeft() ||

@@ -1,20 +1,16 @@
 package entities;
 
+import core.GameObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Player {
-    private int x, y;
-    private int width, height;
+public class Player extends GameObject {
     private int velocityY;
     private int velocityX = 3; // automatický pohyb doprava
     private final int gravity = 1;
 
     public Player(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        super(x, y, width, height);
         this.velocityY = 0;
     }
 
@@ -45,17 +41,13 @@ public class Player {
         velocityY = 0;
     }
 
+    @Override
     public void render(GraphicsContext gc) {
         gc.setFill(Color.RED);
         gc.fillRect(x, y, width, height);
         gc.setStroke(Color.BLACK);
         gc.strokeRect(x, y, width, height);
     }
-
-    public int getLeft()   { return x; }
-    public int getRight()  { return x + width; }
-    public int getTop()    { return y; }
-    public int getBottom() { return y + height; }
 
     public boolean intersects(Obstacle o) {
         return !(getRight() < o.getLeft() ||
