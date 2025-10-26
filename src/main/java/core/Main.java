@@ -16,11 +16,10 @@ import javafx.util.Duration;
 import ui.PauseMenuController;
 import ui.StartScreenController;
 
-/**
- * Main JavaFX application class. Handles switching between menu, game, and pause menu.
- * Now uses Level and InputHandler for better architecture.
- */
 public class Main extends Application {
+    private static final int WIDTH = 1200;
+    private static final int HEIGHT = 800;
+
     private Stage mainStage;
     private StackPane gameRoot;
     private Canvas canvas;
@@ -39,7 +38,8 @@ public class Main extends Application {
         controller.setPrimaryStage(stage);
         controller.setOnStartGameListener(this::startGame);
 
-        Scene scene = new Scene(root);
+        // sjednocená velikost okna
+        Scene scene = new Scene(root, WIDTH, HEIGHT);
         stage.setTitle("Projekt - Geometry Dash");
         stage.setScene(scene);
         stage.show();
@@ -50,31 +50,33 @@ public class Main extends Application {
         game = new Game();
         game.setOnGameOver(this::handleGameOver);
 
+        // Zvol Level podle obtížnosti
         Level level;
         switch (difficulty) {
             case EASY:
-                level = new Level(4, 5, 100, 250, 800, 400);
+                level = new Level(4, 5, 100, 250, WIDTH, HEIGHT);
                 break;
             case MEDIUM:
-                level = new Level(6, 4, 100, 250, 800, 400);
+                level = new Level(6, 4, 100, 250, WIDTH, HEIGHT);
                 break;
             case HARD:
-                level = new Level(8, 3, 100, 250, 800, 400);
+                level = new Level(8, 3, 100, 250, WIDTH, HEIGHT);
                 break;
             default:
-                level = new Level(4, 5, 100, 250, 800, 400);
+                level = new Level(4, 5, 100, 250, WIDTH, HEIGHT); // fallback
         }
         game.reset(level);
 
         gameRoot = new StackPane();
         Pane root = new Pane();
-        canvas = new Canvas(level.getWidth(), level.getHeight());
+        canvas = new Canvas(WIDTH, HEIGHT);
         root.getChildren().add(canvas);
         gameRoot.getChildren().add(root);
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        Scene gameScene = new Scene(gameRoot);
+        // sjednocená velikost okna i pro hru
+        Scene gameScene = new Scene(gameRoot, WIDTH, HEIGHT);
         mainStage.setScene(gameScene);
 
         gameScene.setOnKeyPressed(this::handleKeyPressed);
@@ -109,6 +111,7 @@ public class Main extends Application {
 
     private void handleGameOver() {
         timer.stop();
+        // Zobrazí GAME OVER a po 5s návrat do menu
         game.render(canvas.getGraphicsContext2D());
         PauseTransition pause = new PauseTransition(Duration.seconds(5));
         pause.setOnFinished(event -> {
