@@ -38,7 +38,6 @@ public class Main extends Application {
         controller.setPrimaryStage(stage);
         controller.setOnStartGameListener(this::startGame);
 
-        // sjednocená velikost okna
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         stage.setTitle("Projekt - Geometry Dash");
         stage.setScene(scene);
@@ -50,7 +49,6 @@ public class Main extends Application {
         game = new Game();
         game.setOnGameOver(this::handleGameOver);
 
-        // Zvol Level podle obtížnosti
         Level level;
         switch (difficulty) {
             case EASY:
@@ -63,7 +61,7 @@ public class Main extends Application {
                 level = new Level(8, 3, 100, 250, WIDTH, HEIGHT);
                 break;
             default:
-                level = new Level(4, 5, 100, 250, WIDTH, HEIGHT); // fallback
+                level = new Level(4, 5, 100, 250, WIDTH, HEIGHT);
         }
         game.reset(level);
 
@@ -75,7 +73,6 @@ public class Main extends Application {
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        // sjednocená velikost okna i pro hru
         Scene gameScene = new Scene(gameRoot, WIDTH, HEIGHT);
         mainStage.setScene(gameScene);
 
@@ -111,7 +108,6 @@ public class Main extends Application {
 
     private void handleGameOver() {
         timer.stop();
-        // Zobrazí GAME OVER a po 5s návrat do menu
         game.render(canvas.getGraphicsContext2D());
         PauseTransition pause = new PauseTransition(Duration.seconds(5));
         pause.setOnFinished(event -> {
