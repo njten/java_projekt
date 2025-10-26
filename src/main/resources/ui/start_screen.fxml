@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ui.StartScreenController"
+      alignment="CENTER" spacing="20" prefWidth="600" prefHeight="400">
+    <Button fx:id="easyButton" text="Lehký level" onAction="#handleEasy"/>
+    <Button fx:id="mediumButton" text="Středně těžký level" onAction="#handleMedium"/>
+    <Button fx:id="hardButton" text="Těžký level" onAction="#handleHard"/>
+    <Button fx:id="endlessButton" text="Nekonečný režim" onAction="#handleEndless"/>
+    <Button fx:id="exitButton" text="Exit" onAction="#handleExit"/>
+</VBox>

@@ -14,6 +14,14 @@ public class Player extends GameObject {
         this.velocityY = 0;
     }
 
+    public void setSpeed(int speed) {
+        this.velocityX = speed;
+    }
+
+    public int getX() {
+        return x;
+    }
+
     public void jump() {
         if (velocityY == 0) {
             velocityY = -15;
