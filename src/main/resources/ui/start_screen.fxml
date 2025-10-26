@@ -10,6 +10,5 @@
     <Button fx:id="easyButton" text="Lehký level" onAction="#handleEasy"/>
     <Button fx:id="mediumButton" text="Středně těžký level" onAction="#handleMedium"/>
     <Button fx:id="hardButton" text="Těžký level" onAction="#handleHard"/>
-    <Button fx:id="endlessButton" text="Nekonečný režim" onAction="#handleEndless"/>
     <Button fx:id="exitButton" text="Exit" onAction="#handleExit"/>
 </VBox>

@@ -48,12 +48,6 @@ public class StartScreenController {
     }
 
     @FXML
-    private void handleEndless() {
-        selectedDifficulty = Difficulty.ENDLESS;
-        if (startGameListener != null) startGameListener.onStartGame(selectedDifficulty);
-    }
-
-    @FXML
     private void handleExit() {
         if (primaryStage != null) primaryStage.close();
     }
