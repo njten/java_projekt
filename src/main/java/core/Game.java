@@ -6,16 +6,20 @@ import entities.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import ui.StartScreenController;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Game {
     private Player player;
-    private Obstacle[] obstacles;
-    private Platform[] platforms;
+    private List<Obstacle> obstacles = new ArrayList<>();
+    private List<Platform> platforms = new ArrayList<>();
     private boolean gameOver = false;
     private boolean paused = false;
     private Level level;
     private StartScreenController.Difficulty difficulty;
     private Runnable onGameOver;
+
+    private final List<GameListener> listeners = new ArrayList<>();
+    public void addListener(GameListener l) { listeners.add(l); }
 
     public void setOnGameOver(Runnable r) { onGameOver = r; }
 
@@ -27,11 +31,11 @@ public class Game {
 
         player = new Player(level.getPlayerStartX(), level.getPlayerStartY(), 30, 30);
 
-        List<Obstacle> obstaclesList = level.generateObstacles();
-        obstacles = obstaclesList.toArray(new Obstacle[0]);
+        obstacles.clear();
+        obstacles.addAll(level.generateObstacles());
 
-        List<Platform> platformsList = level.generatePlatforms();
-        platforms = platformsList.toArray(new Platform[0]);
+        platforms.clear();
+        platforms.addAll(level.generatePlatforms());
     }
 
     public void update() {
@@ -62,13 +66,10 @@ public class Game {
     public void render(GraphicsContext gc) {
         gc.clearRect(0, 0, level.getWidth(), level.getHeight());
 
-        for (Platform platform : platforms) {
-            platform.render(gc);
-        }
+        platforms.forEach(platform -> platform.render(gc));
         player.render(gc);
-        for (Obstacle obstacle : obstacles) {
-            obstacle.render(gc);
-        }
+        obstacles.forEach(obstacle -> obstacle.render(gc));
+
         if (gameOver) {
             gc.setFill(javafx.scene.paint.Color.BLACK);
             gc.fillText("GAME OVER", level.getWidth() / 2.0 - 40, level.getHeight() / 2.0);
@@ -87,11 +88,12 @@ public class Game {
 
     private void triggerGameOver() {
         gameOver = true;
+        listeners.forEach(GameListener::onGameOver);
         if (onGameOver != null) onGameOver.run();
     }
 
     public Player getPlayer() { return player; }
-    public Obstacle[] getObstacles() { return obstacles; }
-    public Platform[] getPlatforms() { return platforms; }
+    public List<Obstacle> getObstacles() { return obstacles; }
+    public List<Platform> getPlatforms() { return platforms; }
     public Level getLevel() { return level; }
 }

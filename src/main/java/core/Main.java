@@ -36,8 +36,7 @@ public class Main extends Application {
 
         StartScreenController controller = loader.getController();
         controller.setPrimaryStage(stage);
-        controller.setOnStartGameListener(this::startGame);
-
+        controller.setOnStartGameListener(difficulty -> startGame(difficulty));
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         stage.setTitle("Projekt - Geometry Dash");
         stage.setScene(scene);
