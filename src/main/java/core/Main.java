@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -27,16 +28,22 @@ public class Main extends Application {
     private Game game;
     private InputHandler inputHandler = new InputHandler();
     private StartScreenController.Difficulty lastDifficulty;
+    private ScoreManager scoreManager;
 
     @Override
     public void start(Stage stage) throws Exception {
         this.mainStage = stage;
+        this.scoreManager = new ScoreManager();
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/start_screen.fxml"));
         Parent root = loader.load();
 
         StartScreenController controller = loader.getController();
         controller.setPrimaryStage(stage);
         controller.setOnStartGameListener(difficulty -> startGame(difficulty));
+        controller.setScoreManager(scoreManager);
+        controller.displayHighScores();
+
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         stage.setTitle("Projekt - Geometry Dash");
         stage.setScene(scene);
@@ -107,6 +114,15 @@ public class Main extends Application {
 
     private void handleGameOver() {
         timer.stop();
+        int finalScore = game.getScore();
+        if (scoreManager.updateHighScore(lastDifficulty, finalScore)) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Nové nejvyšší skóre!");
+            alert.setHeaderText(null);
+            alert.setContentText("Gratulujeme! Vaše nové nejvyšší skóre je " + finalScore);
+            alert.showAndWait();
+        }
+
         game.render(canvas.getGraphicsContext2D());
         PauseTransition pause = new PauseTransition(Duration.seconds(5));
         pause.setOnFinished(event -> {

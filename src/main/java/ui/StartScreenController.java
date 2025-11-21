@@ -1,21 +1,26 @@
 package ui;
 
+import core.ScoreManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 public class StartScreenController {
     public enum Difficulty { EASY, MEDIUM, HARD, ENDLESS }
 
-    private Difficulty selectedDifficulty;
     private Stage primaryStage;
     private OnStartGameListener startGameListener;
+    private ScoreManager scoreManager;
 
     @FXML private Button easyButton;
     @FXML private Button mediumButton;
     @FXML private Button hardButton;
-    @FXML private Button endlessButton;
     @FXML private Button exitButton;
+    @FXML private Label easyScoreLabel;
+    @FXML private Label mediumScoreLabel;
+    @FXML private Label hardScoreLabel;
+
 
     public interface OnStartGameListener {
         void onStartGame(Difficulty difficulty);
@@ -29,22 +34,31 @@ public class StartScreenController {
         this.primaryStage = stage;
     }
 
+    public void setScoreManager(ScoreManager scoreManager) {
+        this.scoreManager = scoreManager;
+    }
+
+    public void displayHighScores() {
+        if (scoreManager != null) {
+            easyScoreLabel.setText("Nejvyšší skóre: " + scoreManager.getHighScore(Difficulty.EASY));
+            mediumScoreLabel.setText("Nejvyšší skóre: " + scoreManager.getHighScore(Difficulty.MEDIUM));
+            hardScoreLabel.setText("Nejvyšší skóre: " + scoreManager.getHighScore(Difficulty.HARD));
+        }
+    }
+
     @FXML
     private void handleEasy() {
-        selectedDifficulty = Difficulty.EASY;
-        if (startGameListener != null) startGameListener.onStartGame(selectedDifficulty);
+        if (startGameListener != null) startGameListener.onStartGame(Difficulty.EASY);
     }
 
     @FXML
     private void handleMedium() {
-        selectedDifficulty = Difficulty.MEDIUM;
-        if (startGameListener != null) startGameListener.onStartGame(selectedDifficulty);
+        if (startGameListener != null) startGameListener.onStartGame(Difficulty.MEDIUM);
     }
 
     @FXML
     private void handleHard() {
-        selectedDifficulty = Difficulty.HARD;
-        if (startGameListener != null) startGameListener.onStartGame(selectedDifficulty);
+        if (startGameListener != null) startGameListener.onStartGame(Difficulty.HARD);
     }
 
     @FXML

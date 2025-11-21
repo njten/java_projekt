@@ -93,6 +93,7 @@ public class Game {
     }
 
     public Player getPlayer() { return player; }
+    public int getScore() { return player != null ? player.getX() : 0; }
     public List<Obstacle> getObstacles() { return obstacles; }
     public List<Platform> getPlatforms() { return platforms; }
     public Level getLevel() { return level; }
