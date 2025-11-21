@@ -33,7 +33,6 @@ public class Player extends GameObject {
         y += velocityY;
         x += velocityX;
 
-        // země
         if (y > 250) {
             y = 250;
             velocityY = 0;

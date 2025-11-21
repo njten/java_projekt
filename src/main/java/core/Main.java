@@ -3,23 +3,30 @@ package core;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import ui.PauseMenuController;
 import ui.StartScreenController;
 
+import java.util.Optional;
+
 public class Main extends Application {
     private static final int WIDTH = 1200;
     private static final int HEIGHT = 800;
+    private static final int DEFAULT_PLAYER_SPEED = 3;
+    private static final int FEI_PLAYER_SPEED = 5;
 
     private Stage mainStage;
     private StackPane gameRoot;
@@ -29,26 +36,69 @@ public class Main extends Application {
     private InputHandler inputHandler = new InputHandler();
     private StartScreenController.Difficulty lastDifficulty;
     private ScoreManager scoreManager;
+    private FeiEmployeeNerf feiEmployeeService;
+    private boolean isFeiEmployee = false;
 
     @Override
     public void start(Stage stage) throws Exception {
         this.mainStage = stage;
         this.scoreManager = new ScoreManager();
 
+        new Thread(() -> {
+            feiEmployeeService = new FeiEmployeeNerf();
+            feiEmployeeService.loadEmployeeNames();
+            Platform.runLater(this::promptForUsername);
+        }).start();
+
+        showStartScreen();
+    }
+
+    private void promptForUsername() {
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.initStyle(StageStyle.UTILITY);
+        dialog.setTitle("Ověření");
+        dialog.setHeaderText("Pro ověření zadejte své přijmení a jméno.");
+        dialog.setContentText("Celé jméno:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent() && !result.get().trim().isEmpty()) {
+            String username = result.get();
+            if (feiEmployeeService.isFeiEmployee(username)) {
+                isFeiEmployee = true;
+                System.out.println("Uživatel '" + username + "' byl rozpoznán jako člen katedry informatiky.");
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Ověření úspěšné");
+                    alert.setHeaderText("Vítejte!");
+                    alert.setContentText("Jako člen katedry informatiky dostanete nerf!");
+                    alert.show();
+                });
+            }
+        }
+    }
+
+    private void showStartScreen() throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/start_screen.fxml"));
         Parent root = loader.load();
 
         StartScreenController controller = loader.getController();
-        controller.setPrimaryStage(stage);
-        controller.setOnStartGameListener(difficulty -> startGame(difficulty));
+        controller.setPrimaryStage(mainStage);
+        controller.setOnStartGameListener(difficulty -> {
+            try {
+                startGame(difficulty);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         controller.setScoreManager(scoreManager);
         controller.displayHighScores();
 
         Scene scene = new Scene(root, WIDTH, HEIGHT);
-        stage.setTitle("Projekt - Geometry Dash");
-        stage.setScene(scene);
-        stage.show();
+        mainStage.setTitle("Projekt - Geometry Dash");
+        mainStage.setScene(scene);
+        mainStage.show();
     }
+
 
     private void startGame(StartScreenController.Difficulty difficulty) {
         lastDifficulty = difficulty;
@@ -70,6 +120,12 @@ public class Main extends Application {
                 level = new Level(4, 5, 100, 250, WIDTH, HEIGHT);
         }
         game.reset(level);
+
+        if (isFeiEmployee) {
+            game.getPlayer().setSpeed(FEI_PLAYER_SPEED);
+        } else {
+            game.getPlayer().setSpeed(DEFAULT_PLAYER_SPEED);
+        }
 
         gameRoot = new StackPane();
         Pane root = new Pane();
@@ -116,18 +172,26 @@ public class Main extends Application {
         timer.stop();
         int finalScore = game.getScore();
         if (scoreManager.updateHighScore(lastDifficulty, finalScore)) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Nové nejvyšší skóre!");
-            alert.setHeaderText(null);
-            alert.setContentText("Gratulujeme! Vaše nové nejvyšší skóre je " + finalScore);
-            alert.showAndWait();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Nové nejvyšší skóre!");
+                alert.setHeaderText(null);
+                alert.setContentText("Gratulujeme! Vaše nové nejvyšší skóre je " + finalScore);
+                alert.showAndWait();
+            });
         }
 
         game.render(canvas.getGraphicsContext2D());
         PauseTransition pause = new PauseTransition(Duration.seconds(5));
         pause.setOnFinished(event -> {
             try {
-                start(mainStage);
+                Platform.runLater(() -> {
+                    try {
+                        showStartScreen();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -149,7 +213,7 @@ public class Main extends Application {
             controller.setOnExit(() -> {
                 timer.stop();
                 try {
-                    start(mainStage);
+                    showStartScreen();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
