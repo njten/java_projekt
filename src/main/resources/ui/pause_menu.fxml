@@ -8,6 +8,7 @@
       fx:controller="ui.PauseMenuController"
       alignment="CENTER" spacing="20" prefWidth="1200" prefHeight="800">
     <Button fx:id="resumeButton" text="Pokračovat" onAction="#handleResume"/>
+    <Button fx:id="saveButton" text="Uložit hru" onAction="#handleSave"/>
     <Button fx:id="restartButton" text="Restartovat" onAction="#handleRestart"/>
     <Button fx:id="exitButton" text="Konec" onAction="#handleExit"/>
 </VBox>

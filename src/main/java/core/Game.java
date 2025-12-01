@@ -4,32 +4,43 @@ import entities.Player;
 import entities.Obstacle;
 import entities.Platform;
 import javafx.scene.canvas.GraphicsContext;
-import ui.StartScreenController;
+import javafx.scene.paint.Color;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Game {
+public class Game implements Serializable {
     private Player player;
     private List<Obstacle> obstacles = new ArrayList<>();
     private List<Platform> platforms = new ArrayList<>();
     private boolean gameOver = false;
     private boolean paused = false;
     private Level level;
-    private StartScreenController.Difficulty difficulty;
-    private Runnable onGameOver;
 
-    private final List<GameListener> listeners = new ArrayList<>();
-    public void addListener(GameListener l) { listeners.add(l); }
+    private transient Runnable onGameOver;
+
+    private double cameraX = 0;
+
+    private transient List<GameListener> listeners = new ArrayList<>();
+
+    public void addListener(GameListener l) {
+        if (listeners == null) listeners = new ArrayList<>();
+        listeners.add(l);
+    }
 
     public void setOnGameOver(Runnable r) { onGameOver = r; }
 
+    public void initAfterLoad() {
+        listeners = new ArrayList<>();
+    }
+
     public void reset(Level level) {
         this.level = level;
-        this.difficulty = null;
         this.gameOver = false;
         this.paused = false;
+        this.cameraX = 0;
 
-        player = new Player(level.getPlayerStartX(), level.getPlayerStartY(), 30, 30);
+        player = new Player(level.getPlayerStartX(), level.getPlayerStartY(), 40, 40);
 
         obstacles.clear();
         obstacles.addAll(level.generateObstacles());
@@ -41,38 +52,65 @@ public class Game {
     public void update() {
         if (gameOver || paused) return;
 
+        player.update();
+
         boolean onAnyPlatform = false;
+
         for (Platform platform : platforms) {
-            if (platform.isPlayerOnTop(player)) {
-                player.landOn(platform.getTop());
-                onAnyPlatform = true;
-                break;
+            if (player.intersects(platform)) {
+
+                double playerBottom = player.getY() + player.getHeight();
+                double platformTop = platform.getY();
+                double penetrationDepth = playerBottom - platformTop;
+
+                boolean isFalling = player.getVelocityY() >= 0;
+                boolean isTopCollision = penetrationDepth <= 30;
+
+                if (isFalling && isTopCollision) {
+                    player.landOn(platform.getTop());
+                    onAnyPlatform = true;
+                } else {
+                    triggerGameOver();
+                    return;
+                }
             }
-        }
-        if (!onAnyPlatform) {
-            player.update();
-        } else {
-            player.updateHorizontal();
         }
 
         for (Obstacle obstacle : obstacles) {
-            if (player.intersects(obstacle)) {
+            if (obstacle.intersects(player)) {
                 triggerGameOver();
-                break;
+                return;
             }
+        }
+
+        if (player.getY() > 800) {
+            triggerGameOver();
         }
     }
 
     public void render(GraphicsContext gc) {
-        gc.clearRect(0, 0, level.getWidth(), level.getHeight());
+        gc.save();
+        gc.setTransform(1, 0, 0, 1, 0, 0);
+        gc.clearRect(0, 0, 1200, 800);
+
+        gc.setFill(Color.rgb(40, 40, 40));
+        gc.fillRect(0, 0, 1200, 800);
+        gc.restore();
+
+        cameraX = player.getX() - 200;
+
+        gc.save();
+        gc.translate(-cameraX, 0);
 
         platforms.forEach(platform -> platform.render(gc));
-        player.render(gc);
         obstacles.forEach(obstacle -> obstacle.render(gc));
+        player.render(gc);
+
+        gc.restore();
 
         if (gameOver) {
-            gc.setFill(javafx.scene.paint.Color.BLACK);
-            gc.fillText("GAME OVER", level.getWidth() / 2.0 - 40, level.getHeight() / 2.0);
+            gc.setFill(Color.WHITE);
+            gc.fillText("GAME OVER", 500 - 40, 300);
         }
     }
 
@@ -82,19 +120,15 @@ public class Game {
 
     public void pause() { paused = true; }
     public void resume() { paused = false; }
-
     public boolean isPaused() { return paused; }
     public boolean isGameOver() { return gameOver; }
 
     private void triggerGameOver() {
         gameOver = true;
-        listeners.forEach(GameListener::onGameOver);
+        if (listeners != null) listeners.forEach(GameListener::onGameOver);
         if (onGameOver != null) onGameOver.run();
     }
 
     public Player getPlayer() { return player; }
-    public int getScore() { return player != null ? player.getX() : 0; }
-    public List<Obstacle> getObstacles() { return obstacles; }
-    public List<Platform> getPlatforms() { return platforms; }
-    public Level getLevel() { return level; }
+    public int getScore() { return player != null ? player.getX() / 50 : 0; }
 }

@@ -26,6 +26,8 @@
         <Label fx:id="hardScoreLabel" text="Nejvyšší skóre: 0"/>
     </HBox>
 
+    <Button fx:id="loadButton" text="Načíst hru" onAction="#handleLoadGame"/>
+
     <Button fx:id="exitButton" text="Exit" onAction="#handleExit">
         <VBox.margin>
             <Insets top="20"/>

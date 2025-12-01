@@ -5,6 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class Platform extends GameObject {
+    private static final long serialVersionUID = 1L;
+
     public Platform(int x, int y, int width, int height) {
         super(x, y, width, height);
     }

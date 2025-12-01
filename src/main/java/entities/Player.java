@@ -6,8 +6,10 @@ import javafx.scene.paint.Color;
 
 public class Player extends GameObject {
     private int velocityY;
-    private int velocityX = 3; // automatický pohyb doprava
+    private int velocityX = 6;
     private final int gravity = 1;
+    private final int jumpStrength = -16;
+    private boolean isJumping = true;
 
     public Player(int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -18,13 +20,14 @@ public class Player extends GameObject {
         this.velocityX = speed;
     }
 
-    public int getX() {
-        return x;
-    }
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public int getVelocityY() { return velocityY; }
 
     public void jump() {
-        if (velocityY == 0) {
-            velocityY = -15;
+        if (!isJumping) {
+            velocityY = jumpStrength;
+            isJumping = true;
         }
     }
 
@@ -33,10 +36,7 @@ public class Player extends GameObject {
         y += velocityY;
         x += velocityX;
 
-        if (y > 250) {
-            y = 250;
-            velocityY = 0;
-        }
+        if (velocityY > 20) velocityY = 20;
     }
 
     public void updateHorizontal() {
@@ -46,17 +46,23 @@ public class Player extends GameObject {
     public void landOn(int platformTop) {
         y = platformTop - height;
         velocityY = 0;
+        isJumping = false;
     }
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setFill(Color.RED);
+        gc.setFill(Color.YELLOW);
         gc.fillRect(x, y, width, height);
+
         gc.setStroke(Color.BLACK);
+        gc.setLineWidth(2);
         gc.strokeRect(x, y, width, height);
+
+        gc.setFill(Color.BLACK);
+        gc.fillRect(x + width - 15, y + 10, 8, 8);
     }
 
-    public boolean intersects(Obstacle o) {
+    public boolean intersects(GameObject o) {
         return !(getRight() < o.getLeft() ||
                 getLeft() > o.getRight() ||
                 getBottom() < o.getTop() ||

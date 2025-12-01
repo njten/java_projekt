@@ -12,11 +12,13 @@ public class StartScreenController {
     private Stage primaryStage;
     private OnStartGameListener startGameListener;
     private ScoreManager scoreManager;
+    private Runnable onLoadGameListener;
 
     @FXML private Button easyButton;
     @FXML private Button mediumButton;
     @FXML private Button hardButton;
     @FXML private Button exitButton;
+    @FXML private Button loadButton;
     @FXML private Label easyScoreLabel;
     @FXML private Label mediumScoreLabel;
     @FXML private Label hardScoreLabel;
@@ -28,6 +30,10 @@ public class StartScreenController {
 
     public void setOnStartGameListener(OnStartGameListener listener) {
         this.startGameListener = listener;
+    }
+
+    public void setOnLoadGameListener(Runnable listener) {
+        this.onLoadGameListener = listener;
     }
 
     public void setPrimaryStage(Stage stage) {
@@ -59,6 +65,11 @@ public class StartScreenController {
     @FXML
     private void handleHard() {
         if (startGameListener != null) startGameListener.onStartGame(Difficulty.HARD);
+    }
+
+    @FXML
+    private void handleLoadGame() {
+        if (onLoadGameListener != null) onLoadGameListener.run();
     }
 
     @FXML

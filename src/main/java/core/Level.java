@@ -2,56 +2,81 @@ package core;
 
 import entities.Obstacle;
 import entities.Platform;
-import java.util.Random;
-import java.util.List;
-import java.util.ArrayList;
 
-public class Level {
-    private int obstacleCount;
-    private int platformCount;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Level implements Serializable {
+    private String levelFile;
+    private int width, height;
     private int playerStartX;
     private int playerStartY;
-    private int width, height;
 
-    public Level(int obstacleCount, int platformCount, int playerStartX, int playerStartY, int width, int height) {
-        this.obstacleCount = obstacleCount;
-        this.platformCount = platformCount;
+    private static final int TILE_SIZE = 50;
+
+    private List<Obstacle> cachedObstacles;
+    private List<Platform> cachedPlatforms;
+
+    public Level(String levelFile, int playerStartX, int playerStartY) {
+        this.levelFile = levelFile;
         this.playerStartX = playerStartX;
         this.playerStartY = playerStartY;
-        this.width = width;
-        this.height = height;
+        loadLevel();
     }
 
-    public int getObstacleCount() { return obstacleCount; }
-    public int getPlatformCount() { return platformCount; }
+    private void loadLevel() {
+        cachedObstacles = new ArrayList<>();
+        cachedPlatforms = new ArrayList<>();
+
+        try (InputStream is = getClass().getResourceAsStream(levelFile);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+
+            String line;
+            int row = 0;
+            int maxCols = 0;
+
+            while ((line = reader.readLine()) != null) {
+                String[] tokens = line.split(",");
+                maxCols = Math.max(maxCols, tokens.length);
+
+                for (int col = 0; col < tokens.length; col++) {
+                    int val = Integer.parseInt(tokens[col].trim());
+
+                    int x = col * TILE_SIZE;
+                    int y = row * TILE_SIZE;
+
+                    if (val == 0) continue;
+
+                    if (val == 2 || val == 3 || val == 4) {
+                        cachedPlatforms.add(new Platform(x, y, TILE_SIZE, TILE_SIZE));
+                    }
+                    else {
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE));
+                    }
+                }
+                row++;
+            }
+
+            this.width = maxCols * TILE_SIZE;
+            this.height = row * TILE_SIZE;
+
+            int floorY = 9 * TILE_SIZE;
+            cachedPlatforms.add(new Platform(-500, floorY, this.width + 2000, 200));
+
+        } catch (Exception e) {
+            System.err.println("Chyba při načítání levelu: " + levelFile);
+            e.printStackTrace();
+        }
+    }
+
+    public List<Obstacle> generateObstacles() { return cachedObstacles; }
+    public List<Platform> generatePlatforms() { return cachedPlatforms; }
     public int getPlayerStartX() { return playerStartX; }
     public int getPlayerStartY() { return playerStartY; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
-
-    public List<Obstacle> generateObstacles() {
-        List<Obstacle> obstacles = new ArrayList<>();
-        Random rand = new Random();
-        for (int i = 0; i < obstacleCount; i++) {
-            int x = 300 + rand.nextInt(Math.max(1, width - 350));
-            int y = 270 + rand.nextInt(Math.max(1, height - 310));
-            int obstacleWidth = 40;
-            int obstacleHeight = 40;
-            obstacles.add(new Obstacle(x, y, obstacleWidth, obstacleHeight));
-        }
-        return obstacles;
-    }
-
-    public List<Platform> generatePlatforms() {
-        List<Platform> platforms = new ArrayList<>();
-        Random rand = new Random();
-        for (int i = 0; i < platformCount; i++) {
-            int x = 100 + rand.nextInt(Math.max(1, width - 180));
-            int y = 150 + rand.nextInt(Math.max(1, height - 165));
-            int platformWidth = 80 + rand.nextInt(80);
-            int platformHeight = 15;
-            platforms.add(new Platform(x, y, platformWidth, platformHeight));
-        }
-        return platforms;
-    }
 }

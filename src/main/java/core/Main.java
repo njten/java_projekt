@@ -20,13 +20,16 @@ import javafx.util.Duration;
 import ui.PauseMenuController;
 import ui.StartScreenController;
 
+import java.io.*;
 import java.util.Optional;
 
 public class Main extends Application {
-    private static final int WIDTH = 1200;
-    private static final int HEIGHT = 800;
-    private static final int DEFAULT_PLAYER_SPEED = 3;
-    private static final int FEI_PLAYER_SPEED = 5;
+    private static final int WIDTH = 1000;
+    private static final int HEIGHT = 600;
+
+    private static final int DEFAULT_PLAYER_SPEED = 6;
+    private static final int FEI_PLAYER_SPEED = 4;
+    private static final String SAVE_FILE = "savegame.bin";
 
     private Stage mainStage;
     private StackPane gameRoot;
@@ -106,19 +109,16 @@ public class Main extends Application {
         game.setOnGameOver(this::handleGameOver);
 
         Level level;
+        String mapFile;
+
         switch (difficulty) {
-            case EASY:
-                level = new Level(4, 5, 100, 250, WIDTH, HEIGHT);
-                break;
-            case MEDIUM:
-                level = new Level(6, 4, 100, 250, WIDTH, HEIGHT);
-                break;
-            case HARD:
-                level = new Level(8, 3, 100, 250, WIDTH, HEIGHT);
-                break;
-            default:
-                level = new Level(4, 5, 100, 250, WIDTH, HEIGHT);
+            case EASY: mapFile = "/levels/lvl01.csv"; break;
+            case MEDIUM: mapFile = "/levels/lvl02.csv"; break;
+            case HARD: mapFile = "/levels/lvl03.csv"; break;
+            default: mapFile = "/levels/lvl01.csv";
         }
+
+        level = new Level(mapFile, 100, 300);
         game.reset(level);
 
         if (isFeiEmployee) {
@@ -127,6 +127,10 @@ public class Main extends Application {
             game.getPlayer().setSpeed(DEFAULT_PLAYER_SPEED);
         }
 
+        initGameScene();
+    }
+
+    private void initGameScene() {
         gameRoot = new StackPane();
         Pane root = new Pane();
         canvas = new Canvas(WIDTH, HEIGHT);
@@ -141,16 +145,33 @@ public class Main extends Application {
         gameScene.setOnKeyPressed(this::handleKeyPressed);
         gameScene.setOnKeyReleased(this::handleKeyReleased);
 
+        if (timer != null) timer.stop();
         timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 if (!game.isPaused()) {
                     game.update();
-                    game.render(gc);
                 }
+                game.render(gc);
             }
         };
         timer.start();
+    }
+
+    private void saveGame() {
+        if (game == null) return;
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
+            out.writeObject(game);
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Uložení hry");
+                alert.setHeaderText(null);
+                alert.setContentText("Hra byla uložena!");
+                alert.show();
+            });
+        } catch (IOException e) {
+            System.err.println("Chyba při ukládání: " + e.getMessage());
+        }
     }
 
     private void handleKeyPressed(KeyEvent e) {
@@ -182,19 +203,15 @@ public class Main extends Application {
         }
 
         game.render(canvas.getGraphicsContext2D());
-        PauseTransition pause = new PauseTransition(Duration.seconds(5));
+        PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(event -> {
             try {
                 Platform.runLater(() -> {
                     try {
                         showStartScreen();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    } catch (Exception e) { e.printStackTrace(); }
                 });
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            } catch (Exception ex) { ex.printStackTrace(); }
         });
         pause.play();
     }
@@ -212,17 +229,11 @@ public class Main extends Application {
             });
             controller.setOnExit(() -> {
                 timer.stop();
-                try {
-                    showStartScreen();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                try { showStartScreen(); } catch (Exception ex) { ex.printStackTrace(); }
             });
             pauseMenu.setMouseTransparent(false);
             gameRoot.getChildren().add(pauseMenu);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        } catch (Exception ex) { ex.printStackTrace(); }
     }
 
     private void hidePauseMenu() {
