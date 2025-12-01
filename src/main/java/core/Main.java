@@ -25,7 +25,6 @@ import java.util.Optional;
 public class Main extends Application {
     private static final int WIDTH = 1000;
     private static final int HEIGHT = 600;
-
     private static final int DEFAULT_PLAYER_SPEED = 6;
     private static final String SAVE_FILE = "savegame.bin";
 
@@ -37,7 +36,8 @@ public class Main extends Application {
     private InputHandler inputHandler = new InputHandler();
     private StartScreenController.Difficulty lastDifficulty;
     private ScoreManager scoreManager;
-    private FeiEmployeeNerf feiEmployeeService;
+
+    private FeiEmployeeNerf feiEmployeeService = new FeiEmployeeNerf();
     private boolean isFeiEmployee = false;
 
     private StartScreenController startScreenController;
@@ -47,13 +47,9 @@ public class Main extends Application {
         this.mainStage = stage;
         this.scoreManager = new ScoreManager();
 
+        feiEmployeeService.loadEmployeeNames();
         showStartScreen();
-
-        new Thread(() -> {
-            feiEmployeeService = new FeiEmployeeNerf();
-            feiEmployeeService.loadEmployeeNames();
-            Platform.runLater(this::promptForUsername);
-        }).start();
+        promptForUsername();
     }
 
     private void promptForUsername() {
@@ -68,7 +64,6 @@ public class Main extends Application {
             String username = result.get().trim();
 
             scoreManager.setCurrentUser(username);
-
             if (startScreenController != null) {
                 startScreenController.updateProgressLabels();
             }
@@ -76,13 +71,12 @@ public class Main extends Application {
             if (feiEmployeeService.isFeiEmployee(username)) {
                 isFeiEmployee = true;
                 System.out.println("Uživatel '" + username + "' je z FEI.");
-                Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Vítejte");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Jako člen katedry informatiky nedostanete Slow-Motion při respawnu!");
-                    alert.show();
-                });
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Vítejte");
+                alert.setHeaderText(null);
+                alert.setContentText("Jako člen katedry informatiky nedostanete Slow-Motion při respawnu!");
+                alert.show();
             }
         }
     }
@@ -121,27 +115,16 @@ public class Main extends Application {
 
         game.addListener(new GameListener() {
             @Override
-            public void onGameOver() {
-                handleGameOver();
-            }
-
+            public void onGameOver() { handleGameOver(); }
             @Override
-            public void onLevelComplete() {
-                handleLevelComplete();
-            }
+            public void onLevelComplete() { handleLevelComplete(); }
         });
 
-        Level level;
-        String mapFile;
+        String mapFile = "/levels/lvl01.csv";
+        if (difficulty == StartScreenController.Difficulty.MEDIUM) mapFile = "/levels/lvl02.csv";
+        if (difficulty == StartScreenController.Difficulty.HARD) mapFile = "/levels/lvl03.csv";
 
-        switch (difficulty) {
-            case EASY: mapFile = "/levels/lvl01.csv"; break;
-            case MEDIUM: mapFile = "/levels/lvl02.csv"; break;
-            case HARD: mapFile = "/levels/lvl03.csv"; break;
-            default: mapFile = "/levels/lvl01.csv";
-        }
-
-        level = new Level(mapFile, 100, 300);
+        Level level = new Level(mapFile, 100, 300);
         game.reset(level);
         game.getPlayer().setSpeed(DEFAULT_PLAYER_SPEED);
 
@@ -188,9 +171,7 @@ public class Main extends Application {
                 alert.setContentText("Hra byla uložena!");
                 alert.show();
             });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     private void loadGame() {
@@ -207,9 +188,7 @@ public class Main extends Application {
             });
             initGameScene();
             showPauseMenu();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void handleKeyPressed(KeyEvent e) {
@@ -259,22 +238,17 @@ public class Main extends Application {
     private void handleLevelComplete() {
         timer.stop();
         scoreManager.saveProgress(lastDifficulty, 100);
-
         game.render(canvas.getGraphicsContext2D());
-
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Vítězství!");
             alert.setHeaderText(null);
             alert.setContentText("Gratulujeme! Level dokončen (100%).");
             alert.showAndWait();
-
             try {
                 showStartScreen();
                 if (startScreenController != null) startScreenController.updateProgressLabels();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
         });
     }
 
