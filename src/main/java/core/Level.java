@@ -54,37 +54,34 @@ public class Level implements Serializable {
                     int y = row * TILE_SIZE;
 
                     if (val == 2) {
-                        // 2 = Čtverec
+                        // Čtverec
                         cachedPlatforms.add(new Platform(x, y, TILE_SIZE, TILE_SIZE));
                     }
                     else if (val == 1) {
-                        // 1 = Trojúhelník
+                        // Trojúhelník
                         cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 1));
                     }
                     else if (val == 3) {
-                        // 3 = Dva malé čtverce nahoře
+                        // Dva malé čtverce nahoře
                         int smallSize = TILE_SIZE / 2;
-                        // Levý čtverec
                         cachedPlatforms.add(new Platform(x, y, smallSize, smallSize));
-                        // Pravý čtverec
                         cachedPlatforms.add(new Platform(x + smallSize, y, smallSize, smallSize));
                     }
                     else if (val == 4) {
-                        // 4 = Tři malé ostny
+                        // Tři malé ostny dole
                         cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 3));
                     }
                     else if (val == 5) {
-                        // 5 = Obrácený trojúhelník
+                        // Obrácený trojúhelník
                         cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, true, 1));
                     }
-                    // 0 a cokoliv jiného je vzduch
+                    // 0 - nic
                 }
                 row++;
             }
 
             this.width = maxCols * TILE_SIZE;
             this.height = row * TILE_SIZE;
-
             this.finishLine = new FinishLine(this.width, 800);
 
             int floorY = 9 * TILE_SIZE;

@@ -63,3 +63,4 @@ build/
 ### Mac OS ###
 .DS_Store
 >>>>>>> 3d4a394 (pridani projektu)
+/user_progress.properties

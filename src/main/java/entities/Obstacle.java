@@ -18,7 +18,7 @@ public class Obstacle extends GameObject implements Serializable {
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setStroke(Color.PURPLE);
+        gc.setStroke(Color.BLACK);
         gc.setLineWidth(1);
 
         double subWidth = width / (double) spikeCount;
@@ -38,7 +38,7 @@ public class Obstacle extends GameObject implements Serializable {
                 yPoints = new double[]{ baseLine, baseLine - spikeHeight, baseLine };
             }
 
-            gc.setFill(Color.PURPLE);
+            gc.setFill(Color.rgb(50, 50, 50));
             gc.fillPolygon(xPoints, yPoints, 3);
             gc.strokePolygon(xPoints, yPoints, 3);
         }

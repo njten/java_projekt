@@ -41,10 +41,8 @@ public class Player extends GameObject {
 
     public void update(double multiplier) {
         velocityY += gravity * multiplier;
-
         y += (int) (velocityY * multiplier);
         x += (int) (velocityX * multiplier);
-
         if (velocityY > 20) velocityY = 20;
     }
 
@@ -64,11 +62,9 @@ public class Player extends GameObject {
     public void render(GraphicsContext gc) {
         gc.setFill(Color.YELLOW);
         gc.fillRect(x, y, width, height);
-
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
         gc.strokeRect(x, y, width, height);
-
         gc.setFill(Color.BLACK);
         gc.fillRect(x + width - 10, y + 5, 6, 6);
     }

@@ -19,6 +19,7 @@ public class StartScreenController {
     @FXML private Button hardButton;
     @FXML private Button exitButton;
     @FXML private Button loadButton;
+
     @FXML private Label easyScoreLabel;
     @FXML private Label mediumScoreLabel;
     @FXML private Label hardScoreLabel;
@@ -42,14 +43,19 @@ public class StartScreenController {
 
     public void setScoreManager(ScoreManager scoreManager) {
         this.scoreManager = scoreManager;
+        updateProgressLabels();
+    }
+
+    public void updateProgressLabels() {
+        if (scoreManager != null) {
+            easyScoreLabel.setText("Progress: " + scoreManager.getUserProgress(Difficulty.EASY) + "%");
+            mediumScoreLabel.setText("Progress: " + scoreManager.getUserProgress(Difficulty.MEDIUM) + "%");
+            hardScoreLabel.setText("Progress: " + scoreManager.getUserProgress(Difficulty.HARD) + "%");
+        }
     }
 
     public void displayHighScores() {
-        if (scoreManager != null) {
-            easyScoreLabel.setText("Nejvyšší skóre: " + scoreManager.getHighScore(Difficulty.EASY));
-            mediumScoreLabel.setText("Nejvyšší skóre: " + scoreManager.getHighScore(Difficulty.MEDIUM));
-            hardScoreLabel.setText("Nejvyšší skóre: " + scoreManager.getHighScore(Difficulty.HARD));
-        }
+        updateProgressLabels();
     }
 
     @FXML

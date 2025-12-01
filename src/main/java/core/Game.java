@@ -31,6 +31,8 @@ public class Game implements Serializable {
     private double speedMultiplier = 1.0;
     private int slowMotionFrames = 0;
 
+    private boolean feiNerfActive = false;
+
     private transient Runnable onGameOver;
     private double cameraX = 0;
     private transient List<GameListener> listeners = new ArrayList<>();
@@ -41,6 +43,10 @@ public class Game implements Serializable {
     }
 
     public void setOnGameOver(Runnable r) { onGameOver = r; }
+
+    public void setFeiNerfActive(boolean active) {
+        this.feiNerfActive = active;
+    }
 
     public void initAfterLoad() {
         listeners = new ArrayList<>();
@@ -82,7 +88,6 @@ public class Game implements Serializable {
         if (lastCheckpoint != null) {
             player.respawnAt(lastCheckpoint.getX(), lastCheckpoint.getY());
             cameraX = player.getX() - 200;
-
             activateSlowMotion();
         } else {
             triggerGameOver();
@@ -90,6 +95,8 @@ public class Game implements Serializable {
     }
 
     private void activateSlowMotion() {
+        if (feiNerfActive) return;
+
         speedMultiplier = 0.7;
         slowMotionFrames = 60;
     }
@@ -120,13 +127,11 @@ public class Game implements Serializable {
         }
 
         boolean onAnyPlatform = false;
-
         for (Platform platform : platforms) {
             if (player.intersects(platform)) {
                 double playerBottom = player.getY() + player.getHeight();
                 double platformTop = platform.getY();
                 double penetrationDepth = playerBottom - platformTop;
-
                 boolean isFalling = player.getVelocityY() >= 0;
                 boolean isTopCollision = penetrationDepth <= 30;
 
@@ -157,7 +162,7 @@ public class Game implements Serializable {
         gc.setTransform(1, 0, 0, 1, 0, 0);
         gc.clearRect(0, 0, 1200, 800);
 
-        gc.setFill(Color.DARKCYAN);
+        gc.setFill(Color.rgb(45, 0, 55));
         gc.fillRect(0, 0, 1200, 800);
         gc.restore();
 
@@ -173,7 +178,6 @@ public class Game implements Serializable {
         if (finishLine != null) finishLine.render(gc);
 
         player.render(gc);
-
         gc.restore();
 
         if (speedMultiplier < 1.0) {
@@ -193,11 +197,9 @@ public class Game implements Serializable {
             gc.setStroke(Color.BLACK);
             gc.setLineWidth(2);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 60));
-
             String text = "LEVEL COMPLETE!";
             gc.fillText(text, 250, 300);
             gc.strokeText(text, 250, 300);
-
             gc.setFont(Font.font("Arial", 30));
             gc.setFill(Color.WHITE);
             gc.fillText("Press ESC to exit", 380, 360);
@@ -220,5 +222,15 @@ public class Game implements Serializable {
     }
 
     public Player getPlayer() { return player; }
-    public int getScore() { return player != null ? player.getX() / 50 : 0; }
+
+    public int getScore() {
+        if (player == null || finishLine == null) return 0;
+        double playerX = player.getX();
+        double finishX = finishLine.getX();
+        if (playerX <= 0) return 0;
+        int percentage = (int) ((playerX / finishX) * 100);
+        if (percentage > 100) return 100;
+        if (percentage < 0) return 0;
+        return percentage;
+    }
 }

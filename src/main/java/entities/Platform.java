@@ -15,10 +15,8 @@ public class Platform extends GameObject {
     public void render(GraphicsContext gc) {
         gc.setFill(Color.CYAN);
         gc.fillRect(x, y, width, height);
-
         gc.setStroke(Color.DARKCYAN);
         gc.strokeRect(x, y, width, height);
-
         gc.setStroke(Color.WHITE);
         gc.setLineWidth(1);
         gc.strokeRect(x + 2, y + 2, width - 4, height - 4);

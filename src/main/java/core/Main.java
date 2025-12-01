@@ -19,7 +19,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import ui.PauseMenuController;
 import ui.StartScreenController;
-
 import java.io.*;
 import java.util.Optional;
 
@@ -28,7 +27,6 @@ public class Main extends Application {
     private static final int HEIGHT = 600;
 
     private static final int DEFAULT_PLAYER_SPEED = 6;
-    private static final int FEI_PLAYER_SPEED = 4;
     private static final String SAVE_FILE = "savegame.bin";
 
     private Stage mainStage;
@@ -42,38 +40,47 @@ public class Main extends Application {
     private FeiEmployeeNerf feiEmployeeService;
     private boolean isFeiEmployee = false;
 
+    private StartScreenController startScreenController;
+
     @Override
     public void start(Stage stage) throws Exception {
         this.mainStage = stage;
         this.scoreManager = new ScoreManager();
+
+        showStartScreen();
 
         new Thread(() -> {
             feiEmployeeService = new FeiEmployeeNerf();
             feiEmployeeService.loadEmployeeNames();
             Platform.runLater(this::promptForUsername);
         }).start();
-
-        showStartScreen();
     }
 
     private void promptForUsername() {
         TextInputDialog dialog = new TextInputDialog("");
         dialog.initStyle(StageStyle.UTILITY);
-        dialog.setTitle("Ověření");
-        dialog.setHeaderText("Pro ověření zadejte své přijmení a jméno.");
+        dialog.setTitle("Přihlášení");
+        dialog.setHeaderText("Zadejte své jméno pro uložení a načtení postupu.");
         dialog.setContentText("Celé jméno:");
 
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent() && !result.get().trim().isEmpty()) {
-            String username = result.get();
+            String username = result.get().trim();
+
+            scoreManager.setCurrentUser(username);
+
+            if (startScreenController != null) {
+                startScreenController.updateProgressLabels();
+            }
+
             if (feiEmployeeService.isFeiEmployee(username)) {
                 isFeiEmployee = true;
-                System.out.println("Uživatel '" + username + "' byl rozpoznán jako člen katedry informatiky.");
+                System.out.println("Uživatel '" + username + "' je z FEI.");
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Ověření úspěšné");
-                    alert.setHeaderText("Vítejte!");
-                    alert.setContentText("Jako člen katedry informatiky dostanete nerf!");
+                    alert.setTitle("Vítejte");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Jako člen katedry informatiky nedostanete Slow-Motion při respawnu!");
                     alert.show();
                 });
             }
@@ -84,10 +91,13 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/start_screen.fxml"));
         Parent root = loader.load();
 
-        StartScreenController controller = loader.getController();
-        controller.setPrimaryStage(mainStage);
+        this.startScreenController = loader.getController();
+        startScreenController.setPrimaryStage(mainStage);
+        startScreenController.setScoreManager(scoreManager);
 
-        controller.setOnStartGameListener(difficulty -> {
+        startScreenController.updateProgressLabels();
+
+        startScreenController.setOnStartGameListener(difficulty -> {
             try {
                 startGame(difficulty);
             } catch (Exception e) {
@@ -95,9 +105,7 @@ public class Main extends Application {
             }
         });
 
-        controller.setOnLoadGameListener(this::loadGame);
-        controller.setScoreManager(scoreManager);
-        controller.displayHighScores();
+        startScreenController.setOnLoadGameListener(this::loadGame);
 
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         mainStage.setTitle("Projekt - Geometry Dash");
@@ -105,10 +113,11 @@ public class Main extends Application {
         mainStage.show();
     }
 
-
     private void startGame(StartScreenController.Difficulty difficulty) {
         lastDifficulty = difficulty;
         game = new Game();
+
+        game.setFeiNerfActive(isFeiEmployee);
 
         game.addListener(new GameListener() {
             @Override
@@ -134,12 +143,7 @@ public class Main extends Application {
 
         level = new Level(mapFile, 100, 300);
         game.reset(level);
-
-        if (isFeiEmployee) {
-            game.getPlayer().setSpeed(FEI_PLAYER_SPEED);
-        } else {
-            game.getPlayer().setSpeed(DEFAULT_PLAYER_SPEED);
-        }
+        game.getPlayer().setSpeed(DEFAULT_PLAYER_SPEED);
 
         initGameScene();
     }
@@ -185,62 +189,33 @@ public class Main extends Application {
                 alert.show();
             });
         } catch (IOException e) {
-            System.err.println("Chyba při ukládání: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     private void loadGame() {
         File file = new File(SAVE_FILE);
-        if (!file.exists()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Chyba");
-            alert.setHeaderText(null);
-            alert.setContentText("Žádná uložená hra neexistuje.");
-            alert.show();
-            return;
-        }
-
+        if (!file.exists()) return;
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
             this.game = (Game) in.readObject();
-
             this.game.initAfterLoad();
             this.game.addListener(new GameListener() {
                 @Override
-                public void onGameOver() {
-                    handleGameOver();
-                }
-
+                public void onGameOver() { handleGameOver(); }
                 @Override
-                public void onLevelComplete() {
-                    handleLevelComplete();
-                }
+                public void onLevelComplete() { handleLevelComplete(); }
             });
-
             initGameScene();
             showPauseMenu();
-
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Chyba při načítání: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Chyba");
-            alert.setContentText("Nepodařilo se načíst hru.");
-            alert.show();
         }
     }
 
     private void handleKeyPressed(KeyEvent e) {
         inputHandler.handleKeyPressed(e);
-
-        if (inputHandler.isPressed(javafx.scene.input.KeyCode.SPACE)) {
-            game.playerJump();
-        }
-
-        if (inputHandler.isPressed(javafx.scene.input.KeyCode.S)) {
-            game.placeCheckpoint();
-        }
-
+        if (inputHandler.isPressed(javafx.scene.input.KeyCode.SPACE)) game.playerJump();
+        if (inputHandler.isPressed(javafx.scene.input.KeyCode.S)) game.placeCheckpoint();
         if (inputHandler.isPressed(javafx.scene.input.KeyCode.ESCAPE)) {
             if (!game.isPaused()) showPauseMenu();
             else hidePauseMenu();
@@ -253,14 +228,14 @@ public class Main extends Application {
 
     private void handleGameOver() {
         timer.stop();
-        int finalScore = game.getScore();
+        int percentage = game.getScore();
 
-        if (scoreManager.updateHighScore(lastDifficulty, finalScore)) {
+        if (scoreManager.saveProgress(lastDifficulty, percentage)) {
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Nové nejvyšší skóre!");
+                alert.setTitle("Nový rekord!");
                 alert.setHeaderText(null);
-                alert.setContentText("Gratulujeme! Vaše nové nejvyšší skóre je " + finalScore);
+                alert.setContentText("Dosáhl jsi " + percentage + "%!");
                 alert.showAndWait();
             });
         }
@@ -273,6 +248,7 @@ public class Main extends Application {
                 Platform.runLater(() -> {
                     try {
                         showStartScreen();
+                        if (startScreenController != null) startScreenController.updateProgressLabels();
                     } catch (Exception e) { e.printStackTrace(); }
                 });
             } catch (Exception ex) { ex.printStackTrace(); }
@@ -282,8 +258,7 @@ public class Main extends Application {
 
     private void handleLevelComplete() {
         timer.stop();
-        int finalScore = game.getScore();
-        scoreManager.updateHighScore(lastDifficulty, finalScore);
+        scoreManager.saveProgress(lastDifficulty, 100);
 
         game.render(canvas.getGraphicsContext2D());
 
@@ -291,11 +266,12 @@ public class Main extends Application {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Vítězství!");
             alert.setHeaderText(null);
-            alert.setContentText("Gratulujeme! Dokončil jsi level.");
+            alert.setContentText("Gratulujeme! Level dokončen (100%).");
             alert.showAndWait();
 
             try {
                 showStartScreen();
+                if (startScreenController != null) startScreenController.updateProgressLabels();
             } catch (Exception e) {
                 e.printStackTrace();
             }
