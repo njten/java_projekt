@@ -20,11 +20,4 @@ public class InputHandler {
         return pressedKeys.contains(key);
     }
 
-    public Set<KeyCode> getPressedKeys() {
-        return new HashSet<>(pressedKeys);
-    }
-
-    public void clear() {
-        pressedKeys.clear();
-    }
 }

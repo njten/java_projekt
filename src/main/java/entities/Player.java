@@ -46,17 +46,11 @@ public class Player extends GameObject {
         if (velocityY > 20) velocityY = 20;
     }
 
-    public void updateHorizontal() {
-        x += velocityX;
-    }
-
     public void landOn(int platformTop) {
         y = platformTop - height;
         velocityY = 0;
         isJumping = false;
     }
-
-    public boolean isJumping() { return isJumping; }
 
     @Override
     public void render(GraphicsContext gc) {

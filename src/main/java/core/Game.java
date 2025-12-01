@@ -26,7 +26,6 @@ public class Game implements Serializable {
 
     private boolean gameOver = false;
     private boolean paused = false;
-    private Level level;
 
     private double speedMultiplier = 1.0;
     private int slowMotionFrames = 0;
@@ -38,11 +37,11 @@ public class Game implements Serializable {
     private transient List<GameListener> listeners = new ArrayList<>();
 
     public void addListener(GameListener l) {
-        if (listeners == null) listeners = new ArrayList<>();
+        if (listeners == null) {
+            listeners = new ArrayList<>();
+        }
         listeners.add(l);
     }
-
-    public void setOnGameOver(Runnable r) { onGameOver = r; }
 
     public void setFeiNerfActive(boolean active) {
         this.feiNerfActive = active;
@@ -53,7 +52,6 @@ public class Game implements Serializable {
     }
 
     public void reset(Level level) {
-        this.level = level;
         this.gameOver = false;
         this.gameWon = false;
         this.paused = false;
@@ -95,7 +93,9 @@ public class Game implements Serializable {
     }
 
     private void activateSlowMotion() {
-        if (feiNerfActive) return;
+        if (feiNerfActive) {
+            return;
+        }
 
         speedMultiplier = 0.7;
         slowMotionFrames = 60;
@@ -105,12 +105,16 @@ public class Game implements Serializable {
         if (!gameWon) {
             gameWon = true;
             paused = true;
-            if (listeners != null) listeners.forEach(GameListener::onLevelComplete);
+            if (listeners != null) {
+                listeners.forEach(GameListener::onLevelComplete);
+            }
         }
     }
 
     public void update() {
-        if (gameOver || paused || gameWon) return;
+        if (gameOver || paused || gameWon) {
+            return;
+        }
 
         if (slowMotionFrames > 0) {
             slowMotionFrames--;
@@ -126,7 +130,6 @@ public class Game implements Serializable {
             return;
         }
 
-        boolean onAnyPlatform = false;
         for (Platform platform : platforms) {
             if (player.intersects(platform)) {
                 double playerBottom = player.getY() + player.getHeight();
@@ -137,7 +140,6 @@ public class Game implements Serializable {
 
                 if (isFalling && isTopCollision) {
                     player.landOn(platform.getTop());
-                    onAnyPlatform = true;
                 } else {
                     handleDeath();
                     return;
@@ -175,7 +177,9 @@ public class Game implements Serializable {
         obstacles.forEach(obstacle -> obstacle.render(gc));
         checkpoints.forEach(cp -> cp.render(gc));
 
-        if (finishLine != null) finishLine.render(gc);
+        if (finishLine != null) {
+            finishLine.render(gc);
+        }
 
         player.render(gc);
         gc.restore();
@@ -207,30 +211,57 @@ public class Game implements Serializable {
     }
 
     public void playerJump() {
-        if (!gameOver && !paused && !gameWon) player.jump();
+        if (!gameOver && !paused && !gameWon) {
+            player.jump();
+        }
     }
 
-    public void pause() { if (!gameWon) paused = true; }
-    public void resume() { if (!gameWon) paused = false; }
-    public boolean isPaused() { return paused; }
-    public boolean isGameOver() { return gameOver; }
+    public void pause() {
+        if (!gameWon) {
+            paused = true;
+        }
+    }
+
+    public void resume() {
+        if (!gameWon) {
+            paused = false;
+        }
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
 
     private void triggerGameOver() {
         gameOver = true;
-        if (listeners != null) listeners.forEach(GameListener::onGameOver);
-        if (onGameOver != null) onGameOver.run();
+        if (listeners != null) {
+            listeners.forEach(GameListener::onGameOver);
+        }
+        if (onGameOver != null) {
+            onGameOver.run();
+        }
     }
 
-    public Player getPlayer() { return player; }
+    public Player getPlayer() {
+        return player;
+    }
 
     public int getScore() {
-        if (player == null || finishLine == null) return 0;
+        if (player == null || finishLine == null) {
+            return 0;
+        }
         double playerX = player.getX();
         double finishX = finishLine.getX();
-        if (playerX <= 0) return 0;
+        if (playerX <= 0) {
+            return 0;
+        }
         int percentage = (int) ((playerX / finishX) * 100);
-        if (percentage > 100) return 100;
-        if (percentage < 0) return 0;
+        if (percentage > 100) {
+            return 100;
+        }
+        if (percentage < 0) {
+            return 0;
+        }
         return percentage;
     }
 }

@@ -47,7 +47,9 @@ public class Level implements Serializable {
 
                 for (int col = 0; col < tokens.length; col++) {
                     String token = tokens[col].trim();
-                    if (token.isEmpty()) continue;
+                    if (token.isEmpty()) {
+                        continue;
+                    }
 
                     int val = Integer.parseInt(token);
                     int x = col * TILE_SIZE;
@@ -56,22 +58,18 @@ public class Level implements Serializable {
                     if (val == 2) {
                         // Čtverec
                         cachedPlatforms.add(new Platform(x, y, TILE_SIZE, TILE_SIZE));
-                    }
-                    else if (val == 1) {
+                    } else if (val == 1) {
                         // Trojúhelník
                         cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 1));
-                    }
-                    else if (val == 3) {
+                    } else if (val == 3) {
                         // Dva malé čtverce nahoře
                         int smallSize = TILE_SIZE / 2;
                         cachedPlatforms.add(new Platform(x, y, smallSize, smallSize));
                         cachedPlatforms.add(new Platform(x + smallSize, y, smallSize, smallSize));
-                    }
-                    else if (val == 4) {
+                    } else if (val == 4) {
                         // Tři malé ostny dole
                         cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 3));
-                    }
-                    else if (val == 5) {
+                    } else if (val == 5) {
                         // Obrácený trojúhelník
                         cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, true, 1));
                     }
@@ -98,6 +96,4 @@ public class Level implements Serializable {
     public FinishLine getFinishLine() { return finishLine; }
     public int getPlayerStartX() { return playerStartX; }
     public int getPlayerStartY() { return playerStartY; }
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
 }

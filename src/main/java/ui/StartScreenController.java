@@ -54,10 +54,6 @@ public class StartScreenController {
         }
     }
 
-    public void displayHighScores() {
-        updateProgressLabels();
-    }
-
     @FXML
     private void handleEasy() {
         if (startGameListener != null) startGameListener.onStartGame(Difficulty.EASY);

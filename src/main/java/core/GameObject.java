@@ -21,8 +21,6 @@ public abstract class GameObject implements Renderable, Serializable {
     public int getTop()    { return y; }
     public int getBottom() { return y + height; }
 
-    public void setX(int x) { this.x = x; }
-
     public boolean intersects(GameObject other) {
         return !(getRight() < other.getLeft() ||
                 getLeft() > other.getRight() ||

@@ -21,11 +21,4 @@ public class Platform extends GameObject {
         gc.setLineWidth(1);
         gc.strokeRect(x + 2, y + 2, width - 4, height - 4);
     }
-
-    public boolean isPlayerOnTop(Player p) {
-        return p.getBottom() >= getTop() - 5 &&
-                p.getBottom() <= getTop() + 10 &&
-                p.getRight() > getLeft() &&
-                p.getLeft() < getRight();
-    }
 }

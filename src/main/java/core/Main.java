@@ -115,14 +115,23 @@ public class Main extends Application {
 
         game.addListener(new GameListener() {
             @Override
-            public void onGameOver() { handleGameOver(); }
+            public void onGameOver() {
+                handleGameOver();
+            }
+
             @Override
-            public void onLevelComplete() { handleLevelComplete(); }
+            public void onLevelComplete() {
+                handleLevelComplete();
+            }
         });
 
         String mapFile = "/levels/lvl01.csv";
-        if (difficulty == StartScreenController.Difficulty.MEDIUM) mapFile = "/levels/lvl02.csv";
-        if (difficulty == StartScreenController.Difficulty.HARD) mapFile = "/levels/lvl03.csv";
+        if (difficulty == StartScreenController.Difficulty.MEDIUM) {
+            mapFile = "/levels/lvl02.csv";
+        }
+        if (difficulty == StartScreenController.Difficulty.HARD) {
+            mapFile = "/levels/lvl03.csv";
+        }
 
         Level level = new Level(mapFile, 100, 300);
         game.reset(level);
@@ -146,7 +155,9 @@ public class Main extends Application {
         gameScene.setOnKeyPressed(this::handleKeyPressed);
         gameScene.setOnKeyReleased(this::handleKeyReleased);
 
-        if (timer != null) timer.stop();
+        if (timer != null) {
+            timer.stop();
+        }
 
         timer = new AnimationTimer() {
             @Override
@@ -161,7 +172,9 @@ public class Main extends Application {
     }
 
     private void saveGame() {
-        if (game == null) return;
+        if (game == null) {
+            return;
+        }
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
             out.writeObject(game);
             Platform.runLater(() -> {
@@ -171,33 +184,51 @@ public class Main extends Application {
                 alert.setContentText("Hra byla uložena!");
                 alert.show();
             });
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadGame() {
         File file = new File(SAVE_FILE);
-        if (!file.exists()) return;
+        if (!file.exists()) {
+            return;
+        }
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
             this.game = (Game) in.readObject();
             this.game.initAfterLoad();
             this.game.addListener(new GameListener() {
                 @Override
-                public void onGameOver() { handleGameOver(); }
+                public void onGameOver() {
+                    handleGameOver();
+                }
                 @Override
-                public void onLevelComplete() { handleLevelComplete(); }
+                public void onLevelComplete() {
+                    handleLevelComplete();
+                }
             });
             initGameScene();
             showPauseMenu();
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void handleKeyPressed(KeyEvent e) {
         inputHandler.handleKeyPressed(e);
-        if (inputHandler.isPressed(javafx.scene.input.KeyCode.SPACE)) game.playerJump();
-        if (inputHandler.isPressed(javafx.scene.input.KeyCode.S)) game.placeCheckpoint();
+
+        if (inputHandler.isPressed(javafx.scene.input.KeyCode.SPACE)) {
+            game.playerJump();
+        }
+        if (inputHandler.isPressed(javafx.scene.input.KeyCode.S)) {
+            game.placeCheckpoint();
+        }
         if (inputHandler.isPressed(javafx.scene.input.KeyCode.ESCAPE)) {
-            if (!game.isPaused()) showPauseMenu();
-            else hidePauseMenu();
+            if (!game.isPaused()) {
+                showPauseMenu();
+            } else {
+                hidePauseMenu();
+            }
         }
     }
 
@@ -227,10 +258,16 @@ public class Main extends Application {
                 Platform.runLater(() -> {
                     try {
                         showStartScreen();
-                        if (startScreenController != null) startScreenController.updateProgressLabels();
-                    } catch (Exception e) { e.printStackTrace(); }
+                        if (startScreenController != null) {
+                            startScreenController.updateProgressLabels();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 });
-            } catch (Exception ex) { ex.printStackTrace(); }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
         pause.play();
     }
@@ -247,8 +284,12 @@ public class Main extends Application {
             alert.showAndWait();
             try {
                 showStartScreen();
-                if (startScreenController != null) startScreenController.updateProgressLabels();
-            } catch (Exception e) { e.printStackTrace(); }
+                if (startScreenController != null) {
+                    startScreenController.updateProgressLabels();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 
@@ -266,17 +307,24 @@ public class Main extends Application {
             controller.setOnSave(this::saveGame);
             controller.setOnExit(() -> {
                 timer.stop();
-                try { showStartScreen(); } catch (Exception ex) { ex.printStackTrace(); }
+                try {
+                    showStartScreen();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             });
             pauseMenu.setMouseTransparent(false);
             gameRoot.getChildren().add(pauseMenu);
-        } catch (Exception ex) { ex.printStackTrace(); }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void hidePauseMenu() {
         game.resume();
-        if (gameRoot.getChildren().size() > 1)
+        if (gameRoot.getChildren().size() > 1) {
             gameRoot.getChildren().remove(gameRoot.getChildren().size() - 1);
+        }
     }
 
     public static void main(String[] args) {
