@@ -102,7 +102,7 @@ public class Main extends Application {
         startScreenController.setOnLoadGameListener(this::loadGame);
 
         Scene scene = new Scene(root, WIDTH, HEIGHT);
-        mainStage.setTitle("Projekt - Geometry Dash");
+        mainStage.setTitle("Geometry Dash");
         mainStage.setScene(scene);
         mainStage.show();
     }

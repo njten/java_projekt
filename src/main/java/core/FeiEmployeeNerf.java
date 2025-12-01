@@ -8,8 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,6 +41,14 @@ public class FeiEmployeeNerf {
 
                 loaded = true;
                 System.out.println("Nalezeno " + employeeFullNames.size() + " jmen na stránce katedry informatiky.");
+
+                if (!employeeFullNames.isEmpty()) {
+                    List<String> sortedNames = new ArrayList<>(employeeFullNames);
+
+                    sortedNames.sort((name1, name2) -> name1.compareToIgnoreCase(name2));
+
+                    System.out.println("Prvních 5 jmen (abecedně): " + sortedNames.stream().limit(5).collect(Collectors.toList()));
+                }
             }
 
         } catch (IOException | URISyntaxException e) {
