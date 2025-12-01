@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 public class FeiEmployeeNerf {
 
     private static final String FEI_URL = "https://www.fei.vsb.cz/460/cs/kontakt/lide/";
-
     private static final Pattern NAME_PATTERN = Pattern.compile("<a[^>]*class=[\"']name[\"'][^>]*>(.*?)</a>");
 
     private Set<String> employeeFullNames;
@@ -44,9 +43,7 @@ public class FeiEmployeeNerf {
 
                 if (!employeeFullNames.isEmpty()) {
                     List<String> sortedNames = new ArrayList<>(employeeFullNames);
-
                     sortedNames.sort((name1, name2) -> name1.compareToIgnoreCase(name2));
-
                     System.out.println("Prvních 5 jmen (abecedně): " + sortedNames.stream().limit(5).collect(Collectors.toList()));
                 }
             }
@@ -88,7 +85,9 @@ public class FeiEmployeeNerf {
     }
 
     private String normalizeString(String text) {
-        if (text == null) return "";
+        if (text == null) {
+            return "";
+        }
         String normalized = Normalizer.normalize(text, Normalizer.Form.NFD);
         normalized = normalized.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
         return normalized.toLowerCase().trim();

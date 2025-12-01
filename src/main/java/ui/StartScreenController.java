@@ -54,28 +54,42 @@ public class StartScreenController {
         }
     }
 
+    public void displayHighScores() {
+        updateProgressLabels();
+    }
+
     @FXML
     private void handleEasy() {
-        if (startGameListener != null) startGameListener.onStartGame(Difficulty.EASY);
+        if (startGameListener != null) {
+            startGameListener.onStartGame(Difficulty.EASY);
+        }
     }
 
     @FXML
     private void handleMedium() {
-        if (startGameListener != null) startGameListener.onStartGame(Difficulty.MEDIUM);
+        if (startGameListener != null) {
+            startGameListener.onStartGame(Difficulty.MEDIUM);
+        }
     }
 
     @FXML
     private void handleHard() {
-        if (startGameListener != null) startGameListener.onStartGame(Difficulty.HARD);
+        if (startGameListener != null) {
+            startGameListener.onStartGame(Difficulty.HARD);
+        }
     }
 
     @FXML
     private void handleLoadGame() {
-        if (onLoadGameListener != null) onLoadGameListener.run();
+        if (onLoadGameListener != null) {
+            onLoadGameListener.run();
+        }
     }
 
     @FXML
     private void handleExit() {
-        if (primaryStage != null) primaryStage.close();
+        if (primaryStage != null) {
+            primaryStage.close();
+        }
     }
 }
