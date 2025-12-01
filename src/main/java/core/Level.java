@@ -59,7 +59,7 @@ public class Level implements Serializable {
                     }
                     else if (val == 1) {
                         // 1 = Trojúhelník
-                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 1, false));
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 1));
                     }
                     else if (val == 3) {
                         // 3 = Dva malé čtverce nahoře
@@ -71,11 +71,11 @@ public class Level implements Serializable {
                     }
                     else if (val == 4) {
                         // 4 = Tři malé ostny
-                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 3, false));
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 3));
                     }
                     else if (val == 5) {
                         // 5 = Obrácený trojúhelník
-                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, true, 1, false));
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, true, 1));
                     }
                     // 0 a cokoliv jiného je vzduch
                 }

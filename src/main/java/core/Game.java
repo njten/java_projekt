@@ -28,6 +28,9 @@ public class Game implements Serializable {
     private boolean paused = false;
     private Level level;
 
+    private double speedMultiplier = 1.0;
+    private int slowMotionFrames = 0;
+
     private transient Runnable onGameOver;
     private double cameraX = 0;
     private transient List<GameListener> listeners = new ArrayList<>();
@@ -49,6 +52,9 @@ public class Game implements Serializable {
         this.gameWon = false;
         this.paused = false;
         this.cameraX = 0;
+
+        this.speedMultiplier = 1.0;
+        this.slowMotionFrames = 0;
 
         this.checkpoints.clear();
         this.lastCheckpoint = null;
@@ -76,9 +82,16 @@ public class Game implements Serializable {
         if (lastCheckpoint != null) {
             player.respawnAt(lastCheckpoint.getX(), lastCheckpoint.getY());
             cameraX = player.getX() - 200;
+
+            activateSlowMotion();
         } else {
             triggerGameOver();
         }
+    }
+
+    private void activateSlowMotion() {
+        speedMultiplier = 0.7;
+        slowMotionFrames = 60;
     }
 
     private void handleWin() {
@@ -92,7 +105,14 @@ public class Game implements Serializable {
     public void update() {
         if (gameOver || paused || gameWon) return;
 
-        player.update();
+        if (slowMotionFrames > 0) {
+            slowMotionFrames--;
+            if (slowMotionFrames <= 0) {
+                speedMultiplier = 1.0;
+            }
+        }
+
+        player.update(speedMultiplier);
 
         if (player.intersects(finishLine)) {
             handleWin();
@@ -137,7 +157,7 @@ public class Game implements Serializable {
         gc.setTransform(1, 0, 0, 1, 0, 0);
         gc.clearRect(0, 0, 1200, 800);
 
-        gc.setFill(Color.rgb(40, 40, 40));
+        gc.setFill(Color.DARKCYAN);
         gc.fillRect(0, 0, 1200, 800);
         gc.restore();
 
@@ -155,6 +175,12 @@ public class Game implements Serializable {
         player.render(gc);
 
         gc.restore();
+
+        if (speedMultiplier < 1.0) {
+            gc.setFill(Color.CYAN);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+            gc.fillText("SLOW MOTION", 20, 30);
+        }
 
         if (gameOver) {
             gc.setFill(Color.WHITE);

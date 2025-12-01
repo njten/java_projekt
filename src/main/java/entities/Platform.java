@@ -13,10 +13,15 @@ public class Platform extends GameObject {
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setFill(Color.LIGHTGREEN);
+        gc.setFill(Color.CYAN);
         gc.fillRect(x, y, width, height);
-        gc.setStroke(Color.DARKGREEN);
+
+        gc.setStroke(Color.DARKCYAN);
         gc.strokeRect(x, y, width, height);
+
+        gc.setStroke(Color.WHITE);
+        gc.setLineWidth(1);
+        gc.strokeRect(x + 2, y + 2, width - 4, height - 4);
     }
 
     public boolean isPlayerOnTop(Player p) {

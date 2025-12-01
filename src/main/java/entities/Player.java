@@ -39,10 +39,11 @@ public class Player extends GameObject {
         }
     }
 
-    public void update() {
-        velocityY += gravity;
-        y += (int) velocityY;
-        x += velocityX;
+    public void update(double multiplier) {
+        velocityY += gravity * multiplier;
+
+        y += (int) (velocityY * multiplier);
+        x += (int) (velocityX * multiplier);
 
         if (velocityY > 20) velocityY = 20;
     }
