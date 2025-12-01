@@ -5,15 +5,23 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class Player extends GameObject {
-    private int velocityY;
+    private double velocityY;
     private int velocityX = 6;
-    private final int gravity = 1;
-    private final int jumpStrength = -16;
+    private final double gravity = 1.0;
+    private final double jumpStrength = -16.0;
+
     private boolean isJumping = true;
 
     public Player(int x, int y, int width, int height) {
         super(x, y, width, height);
         this.velocityY = 0;
+    }
+
+    public void respawnAt(int newX, int newY) {
+        this.x = newX;
+        this.y = newY;
+        this.velocityY = 0;
+        this.isJumping = true;
     }
 
     public void setSpeed(int speed) {
@@ -22,7 +30,7 @@ public class Player extends GameObject {
 
     public int getX() { return x; }
     public int getY() { return y; }
-    public int getVelocityY() { return velocityY; }
+    public double getVelocityY() { return velocityY; }
 
     public void jump() {
         if (!isJumping) {
@@ -33,7 +41,7 @@ public class Player extends GameObject {
 
     public void update() {
         velocityY += gravity;
-        y += velocityY;
+        y += (int) velocityY;
         x += velocityX;
 
         if (velocityY > 20) velocityY = 20;
@@ -49,6 +57,8 @@ public class Player extends GameObject {
         isJumping = false;
     }
 
+    public boolean isJumping() { return isJumping; }
+
     @Override
     public void render(GraphicsContext gc) {
         gc.setFill(Color.YELLOW);
@@ -59,13 +69,6 @@ public class Player extends GameObject {
         gc.strokeRect(x, y, width, height);
 
         gc.setFill(Color.BLACK);
-        gc.fillRect(x + width - 15, y + 10, 8, 8);
-    }
-
-    public boolean intersects(GameObject o) {
-        return !(getRight() < o.getLeft() ||
-                getLeft() > o.getRight() ||
-                getBottom() < o.getTop() ||
-                getTop() > o.getBottom());
+        gc.fillRect(x + width - 10, y + 5, 6, 6);
     }
 }

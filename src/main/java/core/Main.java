@@ -86,6 +86,7 @@ public class Main extends Application {
 
         StartScreenController controller = loader.getController();
         controller.setPrimaryStage(mainStage);
+
         controller.setOnStartGameListener(difficulty -> {
             try {
                 startGame(difficulty);
@@ -93,6 +94,8 @@ public class Main extends Application {
                 e.printStackTrace();
             }
         });
+
+        controller.setOnLoadGameListener(this::loadGame);
         controller.setScoreManager(scoreManager);
         controller.displayHighScores();
 
@@ -106,7 +109,18 @@ public class Main extends Application {
     private void startGame(StartScreenController.Difficulty difficulty) {
         lastDifficulty = difficulty;
         game = new Game();
-        game.setOnGameOver(this::handleGameOver);
+
+        game.addListener(new GameListener() {
+            @Override
+            public void onGameOver() {
+                handleGameOver();
+            }
+
+            @Override
+            public void onLevelComplete() {
+                handleLevelComplete();
+            }
+        });
 
         Level level;
         String mapFile;
@@ -146,6 +160,7 @@ public class Main extends Application {
         gameScene.setOnKeyReleased(this::handleKeyReleased);
 
         if (timer != null) timer.stop();
+
         timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -171,14 +186,61 @@ public class Main extends Application {
             });
         } catch (IOException e) {
             System.err.println("Chyba při ukládání: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void loadGame() {
+        File file = new File(SAVE_FILE);
+        if (!file.exists()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Chyba");
+            alert.setHeaderText(null);
+            alert.setContentText("Žádná uložená hra neexistuje.");
+            alert.show();
+            return;
+        }
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
+            this.game = (Game) in.readObject();
+
+            this.game.initAfterLoad();
+            this.game.addListener(new GameListener() {
+                @Override
+                public void onGameOver() {
+                    handleGameOver();
+                }
+
+                @Override
+                public void onLevelComplete() {
+                    handleLevelComplete();
+                }
+            });
+
+            initGameScene();
+            showPauseMenu();
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Chyba při načítání: " + e.getMessage());
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Chyba");
+            alert.setContentText("Nepodařilo se načíst hru.");
+            alert.show();
         }
     }
 
     private void handleKeyPressed(KeyEvent e) {
         inputHandler.handleKeyPressed(e);
+
         if (inputHandler.isPressed(javafx.scene.input.KeyCode.SPACE)) {
             game.playerJump();
         }
+
+        if (inputHandler.isPressed(javafx.scene.input.KeyCode.S)) {
+            game.placeCheckpoint();
+        }
+
         if (inputHandler.isPressed(javafx.scene.input.KeyCode.ESCAPE)) {
             if (!game.isPaused()) showPauseMenu();
             else hidePauseMenu();
@@ -192,6 +254,7 @@ public class Main extends Application {
     private void handleGameOver() {
         timer.stop();
         int finalScore = game.getScore();
+
         if (scoreManager.updateHighScore(lastDifficulty, finalScore)) {
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -203,6 +266,7 @@ public class Main extends Application {
         }
 
         game.render(canvas.getGraphicsContext2D());
+
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(event -> {
             try {
@@ -216,6 +280,28 @@ public class Main extends Application {
         pause.play();
     }
 
+    private void handleLevelComplete() {
+        timer.stop();
+        int finalScore = game.getScore();
+        scoreManager.updateHighScore(lastDifficulty, finalScore);
+
+        game.render(canvas.getGraphicsContext2D());
+
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Vítězství!");
+            alert.setHeaderText(null);
+            alert.setContentText("Gratulujeme! Dokončil jsi level.");
+            alert.showAndWait();
+
+            try {
+                showStartScreen();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     private void showPauseMenu() {
         game.pause();
         try {
@@ -227,6 +313,7 @@ public class Main extends Application {
                 hidePauseMenu();
                 startGame(lastDifficulty);
             });
+            controller.setOnSave(this::saveGame);
             controller.setOnExit(() -> {
                 timer.stop();
                 try { showStartScreen(); } catch (Exception ex) { ex.printStackTrace(); }

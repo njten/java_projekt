@@ -1,5 +1,6 @@
 package core;
 
+import entities.FinishLine;
 import entities.Obstacle;
 import entities.Platform;
 
@@ -20,6 +21,7 @@ public class Level implements Serializable {
 
     private List<Obstacle> cachedObstacles;
     private List<Platform> cachedPlatforms;
+    private FinishLine finishLine;
 
     public Level(String levelFile, int playerStartX, int playerStartY) {
         this.levelFile = levelFile;
@@ -44,25 +46,46 @@ public class Level implements Serializable {
                 maxCols = Math.max(maxCols, tokens.length);
 
                 for (int col = 0; col < tokens.length; col++) {
-                    int val = Integer.parseInt(tokens[col].trim());
+                    String token = tokens[col].trim();
+                    if (token.isEmpty()) continue;
 
+                    int val = Integer.parseInt(token);
                     int x = col * TILE_SIZE;
                     int y = row * TILE_SIZE;
 
-                    if (val == 0) continue;
-
-                    if (val == 2 || val == 3 || val == 4) {
+                    if (val == 2) {
+                        // 2 = Čtverec
                         cachedPlatforms.add(new Platform(x, y, TILE_SIZE, TILE_SIZE));
                     }
-                    else {
-                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE));
+                    else if (val == 1) {
+                        // 1 = Trojúhelník
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 1, false));
                     }
+                    else if (val == 3) {
+                        // 3 = Dva malé čtverce nahoře
+                        int smallSize = TILE_SIZE / 2;
+                        // Levý čtverec
+                        cachedPlatforms.add(new Platform(x, y, smallSize, smallSize));
+                        // Pravý čtverec
+                        cachedPlatforms.add(new Platform(x + smallSize, y, smallSize, smallSize));
+                    }
+                    else if (val == 4) {
+                        // 4 = Tři malé ostny
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, false, 3, false));
+                    }
+                    else if (val == 5) {
+                        // 5 = Obrácený trojúhelník
+                        cachedObstacles.add(new Obstacle(x, y, TILE_SIZE, TILE_SIZE, true, 1, false));
+                    }
+                    // 0 a cokoliv jiného je vzduch
                 }
                 row++;
             }
 
             this.width = maxCols * TILE_SIZE;
             this.height = row * TILE_SIZE;
+
+            this.finishLine = new FinishLine(this.width, 800);
 
             int floorY = 9 * TILE_SIZE;
             cachedPlatforms.add(new Platform(-500, floorY, this.width + 2000, 200));
@@ -75,6 +98,7 @@ public class Level implements Serializable {
 
     public List<Obstacle> generateObstacles() { return cachedObstacles; }
     public List<Platform> generatePlatforms() { return cachedPlatforms; }
+    public FinishLine getFinishLine() { return finishLine; }
     public int getPlayerStartX() { return playerStartX; }
     public int getPlayerStartY() { return playerStartY; }
     public int getWidth() { return width; }
