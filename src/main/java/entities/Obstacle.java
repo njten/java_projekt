@@ -73,12 +73,24 @@ public class Obstacle extends GameObject implements Serializable {
                     cx = offsetX + subWidth;   cy = baseLine;
                 }
 
-                if (isPointInTriangle(pLeft, pBottom, ax, ay, bx, by, cx, cy)) return true;
-                if (isPointInTriangle(pRight, pBottom, ax, ay, bx, by, cx, cy)) return true;
-                if (isPointInTriangle(pLeft, pTop, ax, ay, bx, by, cx, cy)) return true;
-                if (isPointInTriangle(pRight, pTop, ax, ay, bx, by, cx, cy)) return true;
-                if (isPointInTriangle(pLeft + (pRight-pLeft)/2, pBottom, ax, ay, bx, by, cx, cy)) return true;
-                if (isPointInTriangle(pLeft + (pRight-pLeft)/2, pTop, ax, ay, bx, by, cx, cy)) return true;
+                if (isPointInTriangle(pLeft, pBottom, ax, ay, bx, by, cx, cy)) {
+                    return true;
+                }
+                if (isPointInTriangle(pRight, pBottom, ax, ay, bx, by, cx, cy)) {
+                    return true;
+                }
+                if (isPointInTriangle(pLeft, pTop, ax, ay, bx, by, cx, cy)) {
+                    return true;
+                }
+                if (isPointInTriangle(pRight, pTop, ax, ay, bx, by, cx, cy)) {
+                    return true;
+                }
+                if (isPointInTriangle(pLeft + (pRight-pLeft)/2, pBottom, ax, ay, bx, by, cx, cy)) {
+                    return true;
+                }
+                if (isPointInTriangle(pLeft + (pRight-pLeft)/2, pTop, ax, ay, bx, by, cx, cy)) {
+                    return true;
+                }
             }
             return false;
         }

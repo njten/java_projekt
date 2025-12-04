@@ -91,9 +91,19 @@ public class Level implements Serializable {
         }
     }
 
-    public List<Obstacle> generateObstacles() { return cachedObstacles; }
-    public List<Platform> generatePlatforms() { return cachedPlatforms; }
-    public FinishLine getFinishLine() { return finishLine; }
-    public int getPlayerStartX() { return playerStartX; }
-    public int getPlayerStartY() { return playerStartY; }
+    public List<Obstacle> generateObstacles() {
+        return cachedObstacles;
+    }
+    public List<Platform> generatePlatforms() {
+        return cachedPlatforms;
+    }
+    public FinishLine getFinishLine() {
+        return finishLine;
+    }
+    public int getPlayerStartX() {
+        return playerStartX;
+    }
+    public int getPlayerStartY() {
+        return playerStartY;
+    }
 }
