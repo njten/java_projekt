@@ -147,11 +147,15 @@ public class Game implements Serializable {
             }
         }
 
-        for (Obstacle obstacle : obstacles) {
-            if (obstacle.intersects(player)) {
-                handleDeath();
-                return;
-            }
+        if (obstacles.stream().anyMatch(obstacle -> {
+            double hitMargin = 5;
+            return !(player.getRight() - hitMargin < obstacle.getLeft() + hitMargin ||
+                    player.getLeft() + hitMargin > obstacle.getRight() - hitMargin ||
+                    player.getBottom() - hitMargin < obstacle.getTop() + hitMargin ||
+                    player.getTop() + hitMargin > obstacle.getBottom() - hitMargin);
+        })) {
+            handleDeath();
+            return;
         }
 
         if (player.getY() > 800) {
@@ -173,15 +177,17 @@ public class Game implements Serializable {
         gc.save();
         gc.translate(-cameraX, 0);
 
-        platforms.forEach(platform -> platform.render(gc));
-        obstacles.forEach(obstacle -> obstacle.render(gc));
+        platforms.forEach(p -> p.render(gc));
+        obstacles.forEach(o -> o.render(gc));
         checkpoints.forEach(cp -> cp.render(gc));
 
         if (finishLine != null) {
             finishLine.render(gc);
         }
+        if (player != null) {
+            player.render(gc);
+        }
 
-        player.render(gc);
         gc.restore();
 
         if (speedMultiplier < 1.0) {
